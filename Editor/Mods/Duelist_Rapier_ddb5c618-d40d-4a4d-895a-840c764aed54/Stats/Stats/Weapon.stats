@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<stats stat_object_definition_id="a1fa1d2f-c335-4902-898c-4228c3c07d52">
+  <stat_objects>
+    <stat_object is_substat="false">
+      <fields>
+        <field name="Name" type="NameStatObjectFieldDefinition" value="_Boost_Weapon_Rune_ZD_Rune_Duelist" />
+        <field name="Using" type="BaseClassStatObjectFieldDefinition" value="_BOOSTS_Weapon" />
+        <field name="AttackAPCost" type="IntegerStatObjectFieldDefinition" value="-1" />
+        <field name="DamageBoost" type="IntegerStatObjectFieldDefinition" value="-25" />
+        <field name="Skills" type="StringStatObjectFieldDefinition" value="Shout_ZD_Duelist_Brand" />
+      </fields>
+    </stat_object>
+    <stat_object is_substat="false">
+      <fields>
+        <field name="Name" type="NameStatObjectFieldDefinition" value="Status_ZD_Duelist_Brand" />
+        <field name="ModifierType" type="EnumerationStatObjectFieldDefinition" value="0" enumeration_type_name="ModifierType" />
+        <field name="Damage Type" type="EnumerationStatObjectFieldDefinition" value="2" enumeration_type_name="Damage Type" />
+        <field name="Damage" type="IntegerStatObjectFieldDefinition" value="1" />
+        <field name="Damage Range" type="IntegerStatObjectFieldDefinition" value="5" />
+        <field name="DamageFromBase" type="IntegerStatObjectFieldDefinition" value="30" />
+      </fields>
+    </stat_object>
+    <stat_object is_substat="false">
+      <fields>
+        <field name="Name" type="NameStatObjectFieldDefinition" value="_Boost_ZD_Duelist_Brand" />
+        <field name="Using" type="BaseClassStatObjectFieldDefinition" value="_BOOSTS_Weapon" />
+        <field name="ExtraProperties" type="StringStatObjectFieldDefinition" value="ZD_DUELISTBRAND_PROC,100,0" />
+      </fields>
+    </stat_object>
+  </stat_objects>
+</stats>

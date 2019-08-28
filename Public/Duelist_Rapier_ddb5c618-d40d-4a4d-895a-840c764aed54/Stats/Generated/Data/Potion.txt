@@ -1,0 +1,13 @@
+new entry "Stats_ZD_ParryMaster"
+type "Potion"
+data "Act" "1"
+data "Act part" "0"
+data "DodgeBoost" "10"
+data "Duration" "1"
+
+new entry "Stats_ZD_Duelist_Brand"
+type "Potion"
+data "Act" "1"
+data "Act part" "0"
+data "BonusWeapon" "Status_ZD_Duelist_Brand"
+

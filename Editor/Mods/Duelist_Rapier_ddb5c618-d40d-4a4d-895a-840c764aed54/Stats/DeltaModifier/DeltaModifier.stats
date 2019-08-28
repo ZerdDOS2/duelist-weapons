@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<stats stat_object_definition_id="6ae491f7-6396-4f46-ad44-587818dcf40a">
+  <stat_objects>
+    <stat_object is_substat="false">
+      <fields>
+        <field name="Name" type="NameStatObjectFieldDefinition" value="Boost_Weapon_Rune_ZD_Rune_Duelist" />
+        <field name="BoostType" type="StringStatObjectFieldDefinition" value="Rune" />
+        <field name="MinLevel" type="IntegerStatObjectFieldDefinition" value="1" />
+        <field name="MaxLevel" type="IntegerStatObjectFieldDefinition" value="25" />
+        <field name="Frequency" type="IntegerStatObjectFieldDefinition" value="1" />
+        <field name="ModifierType" type="StringStatObjectFieldDefinition" value="Weapon" />
+        <field name="Boost" type="StringStatObjectFieldDefinition" value="_Boost_Weapon_EmptyRuneSlot" />
+        <field name="Multiplier" type="IntegerStatObjectFieldDefinition" value="1" />
+      </fields>
+    </stat_object>
+    <stat_object is_substat="true">
+      <fields>
+        <field name="Name" type="NameStatObjectFieldDefinition" value="Boost_Weapon_Rune_LOOT_Rune_Masterwork_Small_substat_0" />
+        <field name="Using" type="BaseClassStatObjectFieldDefinition" value="Boost_Weapon_Rune_ZD_Rune_Duelist" />
+        <field name="Boost" type="StringStatObjectFieldDefinition" value="ZD_Rune_Duelist" />
+        <field name="Multiplier" type="IntegerStatObjectFieldDefinition" value="1" />
+      </fields>
+    </stat_object>
+    <stat_object is_substat="false">
+      <fields>
+        <field name="Name" type="NameStatObjectFieldDefinition" value="Boost_Weapon_ZD_Duelist_Brand" />
+        <field name="BoostType" type="StringStatObjectFieldDefinition" value="ItemCombo" />
+        <field name="MinLevel" type="IntegerStatObjectFieldDefinition" value="1" />
+        <field name="Frequency" type="IntegerStatObjectFieldDefinition" value="1" />
+        <field name="ModifierType" type="StringStatObjectFieldDefinition" value="Weapon" />
+        <field name="Boost" type="StringStatObjectFieldDefinition" value="_Boost_ZD_Duelist_Brand" />
+        <field name="Multiplier" type="IntegerStatObjectFieldDefinition" value="1" />
+      </fields>
+    </stat_object>
+  </stat_objects>
+</stats>

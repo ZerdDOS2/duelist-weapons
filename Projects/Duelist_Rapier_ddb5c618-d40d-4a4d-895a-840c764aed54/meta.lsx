@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<save>
+    <header version="2" />
+    <version major="3" minor="6" revision="4" build="1" />
+    <region id="MetaData">
+        <node id="root">
+            <attribute id="Module" value="ddb5c618-d40d-4a4d-895a-840c764aed54" type="23" />
+            <attribute id="Name" value="Duelist_Rapier" type="23" />
+            <attribute id="Type" value="Add-on" type="23" />
+            <attribute id="UUID" value="03834a1c-e6b7-458a-a588-1d8346aed20d" type="23" />
+        </node>
+    </region>
+</save>

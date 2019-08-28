@@ -1,0 +1,20 @@
+new entry "_Boost_Weapon_Rune_ZD_Rune_Duelist"
+type "Weapon"
+using "_BOOSTS_Weapon"
+data "AttackAPCost" "-1"
+data "DamageBoost" "-25"
+data "Skills" "Shout_ZD_Duelist_Brand"
+
+new entry "Status_ZD_Duelist_Brand"
+type "Weapon"
+data "ModifierType" "Item"
+data "Damage Type" "Piercing"
+data "Damage" "1"
+data "Damage Range" "5"
+data "DamageFromBase" "30"
+
+new entry "_Boost_ZD_Duelist_Brand"
+type "Weapon"
+using "_BOOSTS_Weapon"
+data "ExtraProperties" "ZD_DUELISTBRAND_PROC,100,0"
+

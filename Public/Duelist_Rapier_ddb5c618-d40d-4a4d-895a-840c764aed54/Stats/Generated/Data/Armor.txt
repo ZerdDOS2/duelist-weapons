@@ -1,0 +1,18 @@
+new entry "ZD_Ring_Duelist"
+type "Armor"
+using "_Rings"
+data "Act part" "0"
+data "Magic Armor Value" "0"
+data "Value" "0"
+data "Skills" "Shout_ZD_TransformWeapon"
+data "ComboCategory" "ZD_ArmorRing"
+data "ObjectCategory" "ZD_Ring"
+data "MinAmount" "1"
+data "MaxAmount" "1"
+data "Priority" "1"
+data "MinLevel" "1"
+
+new entry "_Boost_Armor_Rune_ZD_Placeholder"
+type "Armor"
+using "_BOOSTS_Armor"
+

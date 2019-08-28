@@ -1,0 +1,338 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+
+KBSECTION
+//REGION Adds the Ring to the Players
+// Courtesy of Odinblade.
+IF
+	GameStarted(_, _)
+THEN
+	PROC_ZD_AddRingToPlayers();
+
+IF
+	SavegameLoaded(_,_,_,_)
+THEN
+	PROC_ZD_AddRingToPlayers();
+
+PROC
+	PROC_ZD_AddRingToPlayers()
+AND
+	DB_IsPlayer(_Player)
+AND
+	NOT DB_ZD_HasRing(_Player)
+AND
+	CharacterGetItemTemplateCount(_Player, "ZD_Ring_Duelist_fd02964b-d2bf-427b-bcea-f26b293c979e", 0)
+THEN
+	ItemTemplateAddTo("ZD_Ring_Duelist_fd02964b-d2bf-427b-bcea-f26b293c979e", _Player, 1);
+
+IF
+	ItemAddedToCharacter(_, _Player)
+AND
+	CharacterGetItemTemplateCount(_Player, "ZD_Ring_Duelist_fd02964b-d2bf-427b-bcea-f26b293c979e", 1)
+THEN
+	DB_ZD_HasRing(_Player);
+//END_REGION
+
+//REGION LL Delta Modifier Query
+// Courtesy of LaughingLeader.
+// This QRY passes only if the item has the delta modifier specified.
+QRY
+    LeaderLib_Helper_QRY_ItemHasDeltaModifier((ITEMGUID)_Item, (STRING)_Deltamod)
+AND
+    ItemHasDeltaModifier(_Item, _DeltaMod, _Count)
+AND
+    _Count > 0
+THEN
+    DB_NOOP(1);
+//END_REGION
+
+//REGION Duelist rune insertion
+// This Region takes care of adding the rune to the one-handed weapon when the player uses the Duelist skill
+// As per v.1.0.0.0, it works with any one-handed melee weapons, including wands.
+// It requires the weapon to have at least one empty rune slot, and after that, the rune is unremovable.
+IF
+	CharacterUsedSkill(_Char, "Shout_ZD_TransformWeapon", _, _)
+AND
+	QRY_ZD_HasOneHandedWeapon(_Char)
+THEN
+	OpenMessageBoxYesNo(_Char, "Are you sure you want to transform your weapon into a Duelist weapon? This is irreversible!");
+
+IF
+	CharacterUsedSkill(_Char, "Shout_ZD_TransformWeapon", _, _)
+AND
+	NOT QRY_ZD_HasOneHandedWeapon(_Char)
+THEN
+	ShowNotification(_Char, "You must be wielding a single one-handed weapon for the Duelist skill to work!");
+
+IF
+	MessageBoxYesNoClosed(_Char, "Are you sure you want to transform your weapon into a Duelist weapon? This is irreversible!", 1)
+AND
+	QRY_ZD_FindWeapon(_Char)
+THEN
+	PROC_ZD_AddDuelistRunes(_Char);
+
+// This QRY only passes if the caster has the "Sucker Punch", which is reliable because I never found a way
+//   to avoid handing this skill when the player equips an one-handed weapon only.
+QRY
+	QRY_ZD_HasOneHandedWeapon((CHARACTERGUID)_Char)
+AND
+	CharacterHasSkill(_Char, "Target_SingleHandedAttack", 1)
+THEN
+	DB_NOOP(1);	
+
+// This QRY looks for the weapon, which by this point, is guaranteed to be a single one-handed weapon. Therefore
+//   it simply looks on both weapon and shield slots, returning the found ITEMGUID in the DB_ZD_WeaponFound.
+// It also matches the ITEMGUID to DB_ZD_DuelistWeapon, to check if the weapon found is already a Duelist weapon.
+QRY
+	QRY_ZD_FindWeapon((CHARACTERGUID)_Char)
+AND
+	CharacterGetEquippedItem(_Char, "Weapon", (ITEMGUID)_Weapon)
+AND
+	NOT DB_ZD_DuelistWeapon(_Weapon)
+THEN
+	DB_ZD_WeaponFound(_Char, _Weapon);
+
+QRY
+	QRY_ZD_FindWeapon((CHARACTERGUID)_Char)
+AND
+	CharacterGetEquippedItem(_Char, "Weapon", (ITEMGUID)_Weapon)
+AND
+	DB_ZD_DuelistWeapon(_Weapon)
+THEN
+	ShowNotification(_Char, "Your weapon is already a Duelist Weapon");
+
+QRY
+	QRY_ZD_FindWeapon((CHARACTERGUID)_Char)
+AND
+	CharacterGetEquippedItem(_Char, "Shield", (ITEMGUID)_Weapon)
+AND
+	NOT DB_ZD_DuelistWeapon(_Weapon)
+THEN
+	DB_ZD_WeaponFound(_Char, _Weapon);
+
+QRY
+	QRY_ZD_FindWeapon((CHARACTERGUID)_Char)
+AND
+	CharacterGetEquippedItem(_Char, "Shield", (ITEMGUID)_Weapon)
+AND
+	DB_ZD_DuelistWeapon(_Weapon)
+THEN
+	ShowNotification(_Char, "Your weapon is already a Duelist Weapon");
+
+// This PROC finds the first empty rune slot, saves it into DB_ZD_SlotFound and adds 3 extra rune slots 
+//   Obs.: If the item already has rune slots, adding extra do no harm.
+//   Obs.: Gotta add 3 because of save/reloading bug. Can add only one after this bug is fixed.
+// If there's 3 runes placed onto their slots already, it pushes a notification to the player.
+// After adding the rune slot, it launches a timer to add the rune to the item (extra-safety).
+// It also clears the DB_ZD_WeaponFound and, if satisfies the conditions mentioned, adds the weapon,
+//   character and slot position to the DB_ZD_AddDuelistRune.
+PROC
+	PROC_ZD_AddDuelistRunes((CHARACTERGUID)_Char)
+AND
+	DB_ZD_WeaponFound(_Char, _Weapon)
+AND
+	QRY_ZD_GetSlot(_Weapon)
+AND
+	DB_ZD_SlotFound(_Weapon, _Slot)
+THEN
+	ItemAddDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot");
+	ItemAddDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot");
+	ItemAddDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot");
+	DB_ZD_AddDuelistRune(_Weapon, _Char, _Slot);
+	NOT DB_ZD_WeaponFound(_Char, _Weapon);
+	NOT DB_ZD_SlotFound(_Weapon, _Slot);
+	ProcObjectTimer(_Weapon, "ZD_PrepareToAddRune", 1000);
+
+PROC
+	PROC_ZD_AddDuelistRunes((CHARACTERGUID)_Char)
+AND
+	DB_ZD_WeaponFound(_Char, _Weapon)
+AND
+	NOT QRY_ZD_GetSlot(_Weapon)
+THEN
+	ShowNotification(_Char, "Please have at least one empty rune slot for the Duelist Rune!");
+	NOT DB_ZD_WeaponFound(_Char, _Weapon);
+
+QRY
+	QRY_ZD_GetSlot((ITEMGUID)_Weapon)
+AND
+	NOT ItemGetRuneItemTemplate(_Weapon, 0, _)
+AND
+	NOT DB_ZD_SlotFound(_Weapon, _)
+THEN
+	DB_ZD_SlotFound(_Weapon, 0);
+
+QRY
+	QRY_ZD_GetSlot((ITEMGUID)_Weapon)
+AND
+	NOT ItemGetRuneItemTemplate(_Weapon, 1, _)
+AND
+	NOT DB_ZD_SlotFound(_Weapon, _)
+THEN
+	DB_ZD_SlotFound(_Weapon, 1);
+
+QRY
+	QRY_ZD_GetSlot((ITEMGUID)_Weapon)
+AND
+	NOT ItemGetRuneItemTemplate(_Weapon, 2, _)
+AND
+	NOT DB_ZD_SlotFound(_Weapon, _)
+THEN
+	DB_ZD_SlotFound(_Weapon, 2);
+
+// This doesn't work because querying for "Boost_Weapon_EmptyRuneSlot" delta modifier only works for
+//   modifiers that were added through scripting.
+/*PROC
+	PROC_ZD_AddDuelistRunes((CHARACTERGUID)_Char)
+AND
+	DB_ZD_WeaponFound(_Char, _Weapon)
+AND
+	ItemHasDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot", _Count)
+AND
+	_Count >= 3
+THEN
+	ShowNotification(_Char, "This mod doesn't support one-handed weapons with 3 rune slots. Sorry!");
+	NOT DB_ZD_WeaponFound(_Char, _Weapon);
+
+PROC
+	PROC_ZD_AddDuelistRunes((CHARACTERGUID)_Char)
+AND
+	DB_ZD_WeaponFound(_Char, _Weapon)
+AND
+	NOT DB_ZD_DuelistWeapon(_Weapon)
+AND
+	ItemHasDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot", _Count)
+AND
+	_Count < 3
+THEN
+	ItemAddDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot");
+	DB_ZD_AddDuelistRune(_Weapon, _Char, _Count);
+	NOT DB_ZD_WeaponFound(_Char, _Weapon);
+	ProcObjectTimer(_Weapon, "ZD_PrepareToAddRune", 1000);
+
+PROC
+	PROC_ZD_AddDuelistRunes((CHARACTERGUID)_Char)
+AND
+	DB_ZD_WeaponFound(_Char, _Weapon)
+AND
+	NOT DB_ZD_DuelistWeapon(_Weapon)
+AND
+	NOT LeaderLib_Helper_QRY_ItemHasDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot")
+THEN
+	ItemAddDeltaModifier(_Weapon, "Boost_Weapon_EmptyRuneSlot");
+	DB_ZD_AddDuelistRune(_Weapon, _Char, 0);
+	NOT DB_ZD_WeaponFound(_Char, _Weapon);
+	ProcObjectTimer(_Weapon, "ZD_PrepareToAddRune", 1000);*/
+
+// After the specified timer, adds the rune to the weapon, clearing the DB_ZD_AddDuelistRune, adding
+//   the weapon to DB_ZD_DuelistWeapon and adding the duple char-weapon to DB_ZD_DuelistChar.
+PROC
+	ProcObjectTimerFinished((ITEMGUID)_Weapon, "ZD_PrepareToAddRune")
+AND
+	DB_ZD_AddDuelistRune(_Weapon, _Char, _Slot)
+THEN
+	ItemInsertRune(_Char, _Weapon, "ZD_Rune_Duelist_79de51c5-e694-4f35-874a-b25b8dc0a010", _Slot);
+	DB_ZD_DuelistWeapon(_Weapon);
+	DB_ZD_DuelistChar(_Char, _Weapon);
+	NOT DB_ZD_AddDuelistRune(_Weapon, _Char, _Slot);
+	ShowNotification(_Char, "Your weapon is now a Duelist Weapon!");
+//END_REGION
+
+//REGION Rune removal handler
+// This Region manages attempts to remove the rune from the weapon.
+// Instantly destroys the item generated from the rune removal and creates a new one that is added
+//   to the weapon.
+IF
+	RuneRemoved(_Char, _Weapon, _Rune, _Slot)
+AND
+	GetTemplate(_Rune, "ZD_Rune_Duelist_79de51c5-e694-4f35-874a-b25b8dc0a010")
+AND
+	DB_ZD_DuelistWeapon(_Weapon)
+THEN
+	ItemDestroy(_Rune);
+	ItemInsertRune(_Char, _Weapon, "ZD_Rune_Duelist_79de51c5-e694-4f35-874a-b25b8dc0a010", _Slot);
+//END_REGION
+
+//REGION Equipping/Unequipping a Duelist weapon
+// This Region handles the Duelist weapon being equipped and unequipped.
+// As per v.1.0.0.0, the Duelist weapon more recently equipped has priority over any other weapon, unequipping them.
+// Equipping a Duelist weapon remove other weapons and adds the duple Character-Weapon to the
+//   DB_ZD_DuelistChar.
+IF
+	ItemEquipped(_Weapon, _Char)
+AND
+	DB_ZD_DuelistWeapon(_Weapon)
+THEN
+	PROC_ZD_RemoveOtherWeapons(_Char, _Weapon);
+	DB_ZD_DuelistChar(_Char, _Weapon);
+
+// Unequipping the Duelist weapon tied to the char, removes both from DB_ZD_DuelistChar.
+IF
+	ItemUnEquipped(_Weapon, _Char)
+AND
+	DB_ZD_DuelistChar(_Char, _Weapon)
+THEN
+	NOT DB_ZD_DuelistChar(_Char, _Weapon);
+	SetStoryEvent(_Char, "ZD_NoLongerDuelist");
+
+// This PROC looks for any other item that is not the most recently added Duelist weapon and unequips it.
+PROC
+	PROC_ZD_RemoveOtherWeapons((CHARACTERGUID)_Char, (ITEMGUID)_Weapon)
+AND
+	CharacterGetEquippedItem(_Char, "Weapon", _Test)
+AND
+	NOT (ITEMGUID)_Test == _Weapon
+THEN
+	CharacterUnequipItem(_Char, _Test);
+
+PROC
+	PROC_ZD_RemoveOtherWeapons((CHARACTERGUID)_Char, (ITEMGUID)_Weapon)
+AND
+	CharacterGetEquippedItem(_Char, "Shield", _Test)
+AND
+	NOT (ITEMGUID)_Test == _Weapon
+THEN
+	CharacterUnequipItem(_Char, _Test);
+//END_REGION
+
+//REGION Equipping other weapons whilst wielding a Duelist weapon
+// This Region is responsible for managing attempts to equip an item while wielding a Duelist weapon
+// For any item equipped, matches the item to the weapon slot and shield slot. If it's a match and it's
+//   not the Duelist weapon tied to the character, instantly removes it.
+IF
+	ItemEquipped(_Item, _Char)
+AND
+	DB_ZD_DuelistChar(_Char, _Weapon)
+AND
+	CharacterGetEquippedItem(_Char, "Weapon", _Test)
+AND
+	(ITEMGUID)_Test == _Item
+AND
+	_Item != _Weapon
+AND
+	NOT DB_ZD_DuelistChar(_Char, _Item) // Safeguards the recently equipped Duelist weapon against removal
+THEN
+	ShowNotification(_Char, "First unequip your Duelist weapon, then equip other items.");
+	CharacterUnequipItem(_Char, _Item);
+
+IF
+	ItemEquipped(_Item, _Char)
+AND
+	DB_ZD_DuelistChar(_Char, _Weapon)
+AND
+	CharacterGetEquippedItem(_Char, "Shield", _Test)
+AND
+	(ITEMGUID)_Test == _Item
+AND
+	_Item != _Weapon
+AND
+	NOT DB_ZD_DuelistChar(_Char, _Item) // Safeguards the recently equipped Duelist weapon against removal
+THEN
+	ShowNotification(_Char, "First unequip your Duelist weapon, then equip other items.");
+	CharacterUnequipItem(_Char, _Item);
+//END_REGION
+EXITSECTION
+
+ENDEXITSECTION
+ParentTargetEdge "__Start"

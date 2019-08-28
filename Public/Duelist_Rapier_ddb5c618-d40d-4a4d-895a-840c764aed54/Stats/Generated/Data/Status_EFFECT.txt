@@ -1,0 +1,6 @@
+new entry "ZD_DUELISTBRAND_PROC"
+type "StatusData"
+data "StatusType" "EFFECT"
+data "ForGameMaster" "No"
+data "InitiateCombat" "No"
+

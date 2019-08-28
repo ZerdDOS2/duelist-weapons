@@ -1,0 +1,41 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+
+KBSECTION
+IF
+	DB_ZD_DuelistChar(_Char, _)
+AND
+	CharacterHasTalent(_Char, "DualWieldingDodging", 1)
+AND
+	HasActiveStatus(_Char, "ZD_PARRY_MASTER", 0)
+THEN
+	ApplyStatus(_Char, "ZD_PARRY_MASTER", -1.0, 1);
+
+IF
+	StoryEvent((CHARACTERGUID)_Char, "ZD_NoLongerDuelist")
+AND
+	HasActiveStatus(_Char, "ZD_PARRY_MASTER", 1)
+THEN
+	RemoveStatus(_Char, "ZD_PARRY_MASTER");
+
+IF
+	CharacterUnlockedTalent(_Char, "DualWieldingDodging")
+AND
+	DB_ZD_DuelistChar(_Char, _)
+AND
+	HasActiveStatus(_Char, "ZD_PARRY_MASTER", 0)
+THEN
+	ApplyStatus(_Char, "ZD_PARRY_MASTER", -1.0, 1);
+
+IF
+	CharacterLockedTalent(_Char, "DualWieldingDodging")
+AND
+	HasActiveStatus(_Char, "ZD_PARRY_MASTER", 1)
+THEN
+	RemoveStatus(_Char, "ZD_PARRY_MASTER");
+	
+EXITSECTION
+
+ENDEXITSECTION
+ParentTargetEdge "__Start"

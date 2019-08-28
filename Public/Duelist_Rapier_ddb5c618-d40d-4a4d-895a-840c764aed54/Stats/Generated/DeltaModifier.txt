@@ -1,0 +1,17 @@
+new deltamod "Boost_Weapon_Rune_ZD_Rune_Duelist"
+param "BoostType" "Rune"
+param "MinLevel" "1"
+param "MaxLevel" "25"
+param "Frequency" "1"
+param "ModifierType" "Weapon"
+new boost "_Boost_Weapon_EmptyRuneSlot",1
+
+new boost "ZD_Rune_Duelist",1
+
+new deltamod "Boost_Weapon_ZD_Duelist_Brand"
+param "BoostType" "ItemCombo"
+param "MinLevel" "1"
+param "Frequency" "1"
+param "ModifierType" "Weapon"
+new boost "_Boost_ZD_Duelist_Brand",1
+

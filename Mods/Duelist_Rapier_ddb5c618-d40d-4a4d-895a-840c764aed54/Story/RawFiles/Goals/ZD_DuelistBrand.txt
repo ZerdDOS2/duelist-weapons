@@ -1,0 +1,63 @@
+Version 1
+SubGoalCombiner SGC_AND
+INITSECTION
+
+KBSECTION
+//REGION Adds the Delta Modifier
+// Adds the Delta Modifier to the weapon upon Duelist Stance usage.
+IF
+    CharacterStatusApplied(_Char, "ZD_DUELISTBRAND", _)
+AND
+    CharacterGetEquippedWeapon(_Char, (ITEMGUID)_Weapon)
+AND
+    NOT  LeaderLib_Helper_QRY_ItemHasDeltaModifier(_Weapon , "Boost_Weapon_ZD_Duelist_Brand")
+THEN
+    ItemAddDeltaModifier(_Weapon, "Boost_Weapon_ZD_Duelist_Brand");
+//END_REGION
+
+//REGION Applies bleeding on-attack
+// Applies the bleeding if the target still doesn't have it.
+// Also has a blacklist to apply multiple applies sequentially
+IF
+    CharacterStatusAttempt(_Defender, "ZD_DUELISTBRAND_PROC", (CHARACTERGUID)_Attacker)
+AND
+    HasActiveStatus(_Attacker, "ZD_DUELISTBRAND", 1)
+AND
+    HasActiveStatus(_Defender, "BLEEDING", 0)
+AND
+    NOT DB_ZD_DuelistBrand(_Attacker, _Defender)
+THEN
+    DB_ZD_DuelistBrand(_Attacker, _Defender);
+    ApplyStatus(_Defender, "BLEEDING", 6.0, 0, _Attacker);
+    ProcObjectTimer(_Defender, "Clear_DB_ZD_DuelistBrand", 100);
+
+PROC
+    ProcObjectTimerFinished((CHARACTERGUID)_Defender, "Clear_DB_ZD_DuelistBrand")
+AND
+    DB_ZD_DuelistBrand(_Attacker, _Defender)
+THEN
+    NOT DB_ZD_DuelistBrand(_Attacker, _Defender);
+//END_REGION
+
+//REGION Manages weapon removal with Duelist Stance
+// Remove Duelist Stance if the character removes the duelist weapon
+IF
+	StoryEvent((CHARACTERGUID)_Char, "ZD_NoLongerDuelist")
+AND
+	HasActiveStatus(_Char, "ZD_DUELISTBRAND", 1)
+THEN
+	ProcObjectTimer(_Char, "ZD_RemoveDuelistBrand", 100);
+
+PROC
+	ProcObjectTimerFinished((CHARACTERGUID)_Char, "ZD_RemoveDuelistBrand")
+AND
+	HasActiveStatus(_Char, "ZD_DUELISTBRAND", 1)
+AND
+	NOT DB_ZD_DuelistChar(_Char, _)
+THEN
+	RemoveStatus(_Char, "ZD_DUELISTBRAND");
+//END_REGION
+EXITSECTION
+
+ENDEXITSECTION
+ParentTargetEdge "__Start"
